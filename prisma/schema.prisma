@@ -9,3 +9,21 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Account {
+  id       Int       @id @default(autoincrement())
+  name String 
+  accountId String 
+  baseURL String?
+  requests Request[]
+}
+
+model Request {
+  id     Int     @id @default(autoincrement())
+  name   String
+  method String  @default("GET")
+  path    String?
+
+  account   Account? @relation(fields: [accountId], references: [id])
+  accountId Int?
+}
