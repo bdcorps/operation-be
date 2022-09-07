@@ -2,17 +2,16 @@ import prisma from 'lib/prisma'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { enableCors } from 'utils/cors'
 
-type Data = {
-  name: string
-}
-
-export async function getAccountByAccountId(accountId: string) {
-  const page = await prisma.account.findFirst({
-    where: { accountId },
+export async function getAccounts() {
+  const page = await prisma.account.findMany({
     include: { requests: true },
   })
 
   return page
+}
+
+export async function updateAccount(accountId: string, data: any) {
+  await prisma.account.update({ where: { accountId }, data })
 }
 
 const CreateAccount = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -22,7 +21,7 @@ const CreateAccount = async (req: NextApiRequest, res: NextApiResponse) => {
   if (method === 'POST') {
     const { accountId, name } = body
     try {
-      const store = await prisma.account.create({
+      await prisma.account.create({
         data: {
           name,
           accountId,
@@ -35,12 +34,13 @@ const CreateAccount = async (req: NextApiRequest, res: NextApiResponse) => {
         .status(500)
         .json({ error: true, data: { message: 'Method not allowed' } })
     }
-  } else if (method === "GET") {
-    const { accountId } = body
+  }
+  else if (method === "GET") {
     try {
+      const data = await getAccounts()
       return res.status(200).json({
         error: false,
-        data: getAccountByAccountId(accountId),
+        data,
       })
     } catch (error) {
       return res
